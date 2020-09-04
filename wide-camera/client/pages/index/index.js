@@ -1,5 +1,4 @@
 import * as PIXI from "@tbminiapp/pixi-miniprogram-engine";
-// import * as PIXI from "/libs/pixi-miniprogram-engine/dist/pixi.js";
 // registerCanvas 注册canvas给PIXI 
 const { registerCanvas, devicePixelRatio } = PIXI.miniprogram;
 var offsetX, offsetY
@@ -15,35 +14,6 @@ Page({
 
     // 存储精灵图
     this.sprites = {}
-
-    this.scenes = [
-      {
-        name: 'scene1',
-        x: 0,
-        y: 0,
-        width: 1500,
-        height: 750,
-      },
-      {
-        name: 'scene2',
-        x: 1500,
-        y: 0,
-        width: 1500,
-        height: 750,
-      }
-    ];
-    this.scenesContainer = {}
-    //创建场景
-    this.scenes.forEach((item) => {
-      var container = new PIXI.Container();
-      container.width = item.width;
-      container.height = item.height;
-      container.position.set(item.x, item.y)
-      this.scenesContainer[item.name] = container;
-      this.stage.addChild(container)
-    })
-
-
   },
   onShow() {
     // 页面显示
@@ -83,12 +53,39 @@ Page({
           // 设置resolution 为像素密度  
           resolution: devicePixelRatio,
         });
-
-        this.loadResource()
-
         this.application.stage.addChild(this.stage);
+        this.initScenes()
+        this.loadResource()
       },
     });
+  },
+  initScenes(){
+    this.scenes = [
+      {
+        name: 'scene1',
+        x: 0,
+        y: 0,
+        width: 1500,
+        height: 750,
+      },
+      {
+        name: 'scene2',
+        x: 1500,
+        y: 0,
+        width: 1500,
+        height: 750,
+      }
+    ];
+    this.scenesContainer = {}
+    //创建场景
+    this.scenes.forEach((item) => {
+      var container = new PIXI.Container();
+      container.width = item.width;
+      container.height = item.height;
+      container.position.set(item.x, item.y)
+      this.scenesContainer[item.name] = container;
+      this.stage.addChild(container)
+    })
   },
   loadResource() {
     const loader = new PIXI.loaders.Loader();
@@ -107,11 +104,13 @@ Page({
       Object.keys(resources).forEach((key) => {
         this.sprites[key] = new PIXI.Sprite(resources[key].texture)
       })
+      
       this.addResourceToScene()
       // this.sprites.windows.interactive = true
-      console.log('windowsssss', this.sprites.windows)
+      // this.stage.addChild(this.sprites.windows)
+      // console.log('windowsssss', this.sprites.windows)
       this.sprites.windows
-        .on('tap', () => {
+        .on('tap', (event) => {
           my.alert({
             content: '点击了图标'
           })
@@ -122,7 +121,7 @@ Page({
             content: '点击了图标'
           })
         })
-
+      this.application.stage.addChild(this.stage);
       this.animate()
     });
 
@@ -180,8 +179,8 @@ Page({
   animate() {
     //渲染到渲染器
     this.application.ticker.add(() => {
-      this.application.renderer.render(this.stage)
-    });
+      this.application.stage.addChild(this.stage);
+    })
   },
   touchStart(e) {
     console.log('drag-start', e)

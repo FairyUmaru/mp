@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,
+ initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+    <title>Title</title>
+    <style>
+        *{
+            margin: 0;
+            padding: 0;
+        }
+        .content{
+            width: 100vw;
+            height: 100vh;
+        }
+        .main{
+            display: flex;
+        }
+    </style>
+</head>
+<body>
+<div class="content" ontouchstart="onDragStart">
+    <div class="main">
+        <canvas id="canvas"></canvas>
+        <canvas id="canvas2"></canvas>
+    </div>
+</div>
+
+</body>
+<script src="./js/pixi4.8.0.js"></script>
+<script>
+    var offsetX, offsetY;
+    var canvas = document.querySelector("#canvas")
+    canvas.width = document.body.clientHeight*4096/2048;
+    canvas.height = document.body.clientHeight
+    console.log(canvas)
+    // 浏览器是否支持canvas
+    var ctx = canvas.getContext("2d");
+    const renderer = new PIXI.CanvasRenderer({
+        width: document.body.clientHeight*4096/2048,
+        height: document.body.clientHeight,
+        view: canvas,
+        transparent: true,
+        // 强制使用2d上下文进行渲染，如果为flase,则默认使用webgl渲染
+        forceCanvas: true,
+        // 设置resolution 为像素密度
+        resolution: 1,
+    })
+    // 生成名为stage的容器（object）
+    var stage = new PIXI.Container();
+    var sprites = {}
+
+    // 做图片的预加载
+    PIXI.loader
+        .add("./images/front.jpg")
+        .load(loadingFinish);
+
+    //加载完成回调
+    function loadingFinish() {
+        sprites.cat = new PIXI.Sprite(PIXI.loader.resources["./images/front.jpg"].texture);
+        //修改精灵图位置
+        // 通过改变精灵的x、y的属性值来调整它的位置
+        //or sprites.cat.position.set(200, 100);
+        sprites.cat.position.set(0, 0);
+        //修改精灵图大小
+        //设置精灵的width、height或者通过精灵的scale属性设置它的大小。
+        //sun.scale.set(0.3, 0.3);
+
+        //只设置高度图片会变形
+        sprites.cat.height = document.body.clientHeight;
+        sprites.cat.width = document.body.clientHeight*4096/2048;
+        console.log(sprites.cat)
+        // 旋转
+        // sprites.cat.rotation = 0.1;
+        //启用交互事件
+        sprites.cat.interactive = true;
+        // sprites.cat
+        //     // events for drag start
+        //     .on('mousedown', onDragStart)
+        //     .on('touchstart', onDragStart)
+        //     // events for drag end
+        //     .on('mouseup', onDragEnd)
+        //     .on('mouseupoutside', onDragEnd)
+        //     .on('touchend', onDragEnd)
+        //     .on('touchendoutside', onDragEnd)
+        //     // events for drag move
+        //     .on('mousemove', onDragMove)
+        //     .on('touchmove', onDragMove);
+
+        // 添加到舞台
+        stage.addChild(sprites.cat);
+
+        // 绘制文字
+        var scriptText_con = new PIXI.Container();
+        scriptText_con.position.set(300, 228);
+        var textSample = new PIXI.Text("老板大人", {fontSize: '22px', fill: 'white', align: 'center'});
+        textSample.position.set(350, 100)
+        // scriptText_con.addChild(textSample);
+        stage.addChild(textSample);
+
+        requestAnimationFrame(animate);
+    }
+
+    document.addEventListener('touchstart',onDragStart, false);
+    document.addEventListener('touchmove',onDragMove, false);
+    document.addEventListener('touchend',onDragEnd, false);
+
+    // 在渲染器中传入stage。
+    function onDragStart(e) {
+        console.log('drag-start', e)
+        // console.log(e.data.getLocalPosition(this.parent));
+        let touch = e.changedTouches[0];
+        offsetX = touch.clientX;
+        offsetY = touch.clientY
+    }
+    function onDragMove(e) {
+        console.log('drag-move',  e)
+        let touch = e.changedTouches[0];
+        console.log(touch.clientX - offsetX)
+        stage.x += touch.clientX - offsetX;
+        offsetX = touch.clientX
+
+        // console.log(e.data.getLocalPosition(this.parent));
+        // let newPosition = e.data.getLocalPosition(this.parent)
+        // // console.log(newPosition.x - offsetX)
+        // // sprites.cat.x += newPosition.x - offsetX;
+        // stage.x += newPosition.x - offsetX;
+        // console.log(sprites.cat.x)
+        // //判断x的边界（-图片宽度， 0）
+        // let x;
+        if(stage.x > 0) {
+            stage.x = 0
+        }
+        if(stage.x < -stage.width+document.body.clientWidth) {
+            stage.x = -stage.width+document.body.clientWidth
+        }
+        // offsetX = newPosition.x
+        requestAnimationFrame(animate);
+    }
+    function onDragEnd(e) {
+        console.log('drag-end', e)
+    }
+
+    function animate() {
+        //渲染到渲染器
+        renderer.render(stage);
+        requestAnimationFrame(animate);
+    }
+
+    var scriptText_con = new PIXI.Container();
+    scriptText_con.position.set(0, 228);
+    var textSample = new PIXI.Text("老板大人", {fontSize: '22px', fill: 'white', align: 'center'});
+    scriptText_con.addChild(textSample);
+    stage.addChild(scriptText_con);
+    requestAnimationFrame(animate);
+    // renderer.render(new PIXI.Sprite.fromImage('./images/timg.jpg'));
+    // load the texture we need
+    // PIXI.loader.add('bunny', './images/timg.jpg').load((loader, resources) => {
+    //     // This creates a texture from a 'bunny.png' image
+    //     const bunny = new PIXI.Sprite(resources.bunny.texture);
+    //
+    //     // Setup the position of the bunny
+    //     bunny.x = app.renderer.width / 2;
+    //     bunny.y = app.renderer.height / 2;
+    //
+    //     // Rotate around the center
+    //     bunny.anchor.x = 0.5;
+    //     bunny.anchor.y = 0.5;
+    //
+    //     // Add the bunny to the scene we are building
+    //     app.stage.addChild(bunny);
+
+
+    // const application = new PIXI.Application({
+    //     width: 800,
+    //     height: 600,
+    //     view: canvas,
+    //     // context: ctx,
+    //     transparent: true,
+    //     // 强制使用2d上下文进行渲染，如果为flase,则默认使用webgl渲染
+    //     forceCanvas: true,
+    //     // 设置resolution 为像素密度
+    //     resolution: devicePixelRatio,
+    // });
+    // console.log('2222', canvas, application)
+    // application.stage.addChild(PIXI.Sprite.fromImage('./images/timg.jpg'));
+
+    //创建一个渲染器（自动识别创建哪种类型的render）
+    // const renderer = new PIXI.autoDetectRenderer({
+    //     width: 800,
+    //     height: 600,
+    //     view: canvas,
+    //     transparent: true,
+    //     // 设置resolution 为像素密度
+    //     resolution: 2,
+    // });
+    // // ex, add display objects
+    // renderer.render(new PIXI.Sprite.fromImage('./images/timg.jpg'));
+</script>
+</html>
