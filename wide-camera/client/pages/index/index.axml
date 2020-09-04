@@ -1,3 +1,3 @@
-<view>
-  <canvas id="canvas" type="webgl" width="375" height="600" class="canvas" onReady="onCanvasReady" class="canvas" onTouchStart=""="onTouchHandle" onTouchMove="onTouchHandle" onTouchEnd="onTouchHandle"></canvas>
+<view class="page-game">
+  <canvas id="canvas" style="width:100%;height:100vh" type="webgl"  onTouchStart="onTouchHandle" onTouchEnd="onTouchHandle" onTouchMove="onTouchHandle" onTouchCancel="onTouchHandle" onReady="onCanvasReady"></canvas>
 </view>

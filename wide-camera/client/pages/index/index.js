@@ -31,6 +31,7 @@ Page({
         // 为canvas设定宽高（需要设备宽高* 像素密度）;
         canvas.width = windowWidth * dpr;
         canvas.height = windowHeight * dpr;
+        this.pixiCanvas = canvas;
         //为pixi引擎注册当前的canvas  
         registerCanvas(canvas);
         //初始化PIXI.Application  
@@ -53,12 +54,15 @@ Page({
           // 设置resolution 为像素密度  
           resolution: devicePixelRatio,
         });
+        // 添加根舞台到this.application.stage
         this.application.stage.addChild(this.stage);
+
         this.initScenes()
         this.loadResource()
       },
     });
   },
+  // 初始化场景，为每个场景创建一个container
   initScenes(){
     this.scenes = [
       {
@@ -87,6 +91,7 @@ Page({
       this.stage.addChild(container)
     })
   },
+  // 加载资源
   loadResource() {
     const loader = new PIXI.loaders.Loader();
     loader.add('bg1', '/static/right.jpg')
@@ -100,6 +105,7 @@ Page({
     loader.once('complete', function (target, resource) {  // 加载完成
       console.log('加载完成')
     })
+    // 执行loader
     loader.load((loader, resources) => {
       Object.keys(resources).forEach((key) => {
         this.sprites[key] = new PIXI.Sprite(resources[key].texture)
@@ -109,30 +115,19 @@ Page({
       // this.sprites.windows.interactive = true
       // this.stage.addChild(this.sprites.windows)
       // console.log('windowsssss', this.sprites.windows)
+
+      // 添加点击事件
       this.sprites.windows
         .on('tap', (event) => {
           my.alert({
             content: '点击了图标'
           })
         })
-        .on('click', () => {
-          console.log(1111)
-          my.alert({
-            content: '点击了图标'
-          })
-        })
-      this.application.stage.addChild(this.stage);
       this.animate()
     });
 
   },
-  clickChild() {
-    console.log(333)
-    // console.log('click', e)
-    my.alert({
-      content: '点击了图标'
-    })
-  },
+  // 为每个场景添加资源
   addResourceToScene() {
     let spritesData = [
       {
@@ -173,6 +168,7 @@ Page({
   // 监听小程序canvas的touch事件，并触发pixi内部事件  
   onTouchHandle(event) {
     if (this.pixiCanvas && event.changedTouches && event.changedTouches.length) {
+      console.log(this.pixiCanvas)
       this.pixiCanvas.dispatchEvent(event);
     }
   },
