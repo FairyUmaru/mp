@@ -1,0 +1,3 @@
+<view>
+  <view class="dom1" onTouchStart="touchStart" onTouchMove="touchMove" onTouchEnd="touchEnd" onTouchCancel="touchCancel">dom</view>
+</view>

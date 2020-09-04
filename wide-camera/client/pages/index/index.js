@@ -1,97 +1,173 @@
 import * as PIXI from "@tbminiapp/pixi-miniprogram-engine";
+// import * as PIXI from "/libs/pixi-miniprogram-engine/dist/pixi.js";
 // registerCanvas 注册canvas给PIXI 
 const { registerCanvas, devicePixelRatio } = PIXI.miniprogram;
+var offsetX, offsetY
 Page({
   // 供pixi渲染的canvas
   pixiCanvas: null,
   onLoad(query) {
     // 页面加载
     console.info(`Page onLoad with query: ${JSON.stringify(query)}`);
-  },
-  onReady() {
-    // 页面加载完成
+    this.systemInfo = my.getSystemInfoSync();
+    console.log(this.systemInfo)
+    this.stage = new PIXI.Container();
+
+    // 存储精灵图
+    this.sprites = {}
+
+    this.scenes = [
+      {
+        name: 'scene1',
+        x: 0,
+        y: 0,
+        width: 1500,
+        height: 750,
+      },
+      {
+        name: 'scene2',
+        x: 1500,
+        y: 0,
+        width: 1500,
+        height: 750,
+      }
+    ];
+    this.scenesContainer = {}
+    //创建场景
+    this.scenes.forEach((item) => {
+      var container = new PIXI.Container();
+      container.width = item.width;
+      container.height = item.height;
+      container.position.set(item.x, item.y)
+      this.scenesContainer[item.name] = container;
+      this.stage.addChild(container)
+    })
+
+
   },
   onShow() {
     // 页面显示
   },
   onCanvasReady() {
-    console.log('ready')
+    // 建立canvas引用
     my._createCanvas({
       id: "canvas",
-      success: (c) => {
-        console.log('1111111')
-        const systemInfo = my.getSystemInfoSync();
+      success: (canvas) => {
         // 拿到当前设备像素密度
-        const dpr = systemInfo.pixelRatio;
+        const dpr = this.systemInfo.pixelRatio;
         // 拿到当前设备的宽高
-        const windowWidth = systemInfo.windowWidth;
-        const windowHeight = systemInfo.windowHeight;
+        const windowWidth = this.systemInfo.windowWidth;
+        const windowHeight = this.systemInfo.windowHeight;
         // 为canvas设定宽高（需要设备宽高* 像素密度）;
-        c.width = windowWidth * dpr;
-        c.height = windowHeight * dpr;
-        this.pixiCanvas = c;
-        console.log('2222', c)
+        canvas.width = windowWidth * dpr;
+        canvas.height = windowHeight * dpr;
         //为pixi引擎注册当前的canvas  
-        registerCanvas(c);
+        registerCanvas(canvas);
+        //初始化PIXI.Application  
         //计算application的宽高  
         const size = {
-          width: c.width / devicePixelRatio,
-          height: c.height / devicePixelRatio,
+          width: canvas.width / devicePixelRatio,
+          height: canvas.height / devicePixelRatio,
         };
-
-        // 建立一个 CanvasRenderingContext2D 二维渲染上下文。
-        const context = c.getContext('2d');
-
-        // canvas.getContext('webgl')  
-        console.log(PIXI)
-        // 初始化创建画布
-        const application = new PIXI.Application({
+        console.log(size, canvas)
+        // const context = canvas.getContext('2d');
+        const context = canvas.getContext('webgl')
+        this.application = new PIXI.Application({
           width: size.width,
           height: size.height,
-          context: context,
-          view: c,
+          view: canvas,
+          context,
           transparent: true,
-          forceCanvas: true, // 阻止选用webgl渲染
-          resolution: dpr
-        })
-        console.log('0000', application)
-        //Create the renderer 创建一个2d渲染器
-        // 容器
-        // let stageBox = PIXI.Container();
-        // 精灵集合
-        let sprites = {};
-        // 创建资源加载器loader ，进行资源预加载
-        const loader = new PIXI.loaders.Loader();
-        console.log('444', loader)
-        // 链式调用添加图片资源
-        loader.add('bg1', '/static/back.jpg')
-        // 开始加载资源
-        loader.load((loader, resources) => {
-          console.log('5555', loader, resources)
-          // resources is an object where the key is the name of the resource loaded and the value is the resource object.
-          // They have a couple default properties:
-          // - `url`: The URL that the resource was loaded from
-          // - `error`: The error that happened when trying to load (if any)
-          // - `data`: The raw data that was loaded
-          // also may contain other properties based on the middleware that runs.
-          sprites.bg1 = new PIXI.extras.TilingSprite(resources.bg1.texture);
+          // 强制使用2d上下文进行渲染，如果为flase,则默认使用webgl渲染  
+          forceCanvas: false,
+          // 设置resolution 为像素密度  
+          resolution: devicePixelRatio,
         });
 
-        loader.onProgress.add((loader, resources)  => { 
-          console.log(loader, resources)
-        }); // called once per loaded/errored file
-        loader.onError.add((loader, resources)  => { }); // called once per errored file
-        loader.onLoad.add((loader, resources)  => { }); // called once per loaded file
-        loader.onComplete.add((loader, resources)  => { 
-          console.log('7777', sprites)
-          // var container = new PIXI.Container();
-          for (let key in sprites) {
-            application.stage.addChild(sprites[key]);//精灵 添加进 容器
-          }
-          // application.stage.addChild(container); //添加至舞台
-          application.renderer.render(application.stage); //舞台手动渲染
-        }); // called once when the queued resources all load.
+        this.loadResource()
 
+        this.application.stage.addChild(this.stage);
+      },
+    });
+  },
+  loadResource() {
+    const loader = new PIXI.loaders.Loader();
+    loader.add('bg1', '/static/right.jpg')
+      .add('windows', '/static/child.png')
+
+    loader.on("error", function (target, resource) {  // 加载进度
+    });
+    loader.on("progress", function (target, resource) {  // 加载进度
+      console.log('加载中...', parseInt(target.progress) + "%")
+    });
+    loader.once('complete', function (target, resource) {  // 加载完成
+      console.log('加载完成')
+    })
+    loader.load((loader, resources) => {
+      Object.keys(resources).forEach((key) => {
+        this.sprites[key] = new PIXI.Sprite(resources[key].texture)
+      })
+      this.addResourceToScene()
+      // this.sprites.windows.interactive = true
+      console.log('windowsssss', this.sprites.windows)
+      this.sprites.windows
+        .on('tap', () => {
+          my.alert({
+            content: '点击了图标'
+          })
+        })
+        .on('click', () => {
+          console.log(1111)
+          my.alert({
+            content: '点击了图标'
+          })
+        })
+
+      this.animate()
+    });
+
+  },
+  clickChild() {
+    console.log(333)
+    // console.log('click', e)
+    my.alert({
+      content: '点击了图标'
+    })
+  },
+  addResourceToScene() {
+    let spritesData = [
+      {
+        bg1: {
+          x: 0,
+          y: 0,
+          width: 1500,
+          height: 750
+        },
+        windows: {
+          x: 130,
+          y: 400,
+          width: 60,
+          height: 60,
+          //启用交互事件
+          interactive: true,
+          buttonMode: true
+        }
+      }
+    ]
+    //给场景添加图
+    spritesData.forEach((item, index) => {
+      let obj = spritesData[index]
+      console.log(obj)
+      for (let key in obj) {
+        console.log(key)
+        let props = obj[key]
+        console.log(props, this.sprites, this.sprites[key])
+        for (let k in props) {
+          if (props.hasOwnProperty(k)) {
+            this.sprites[key][k] = props[k];
+          }
+        }
+        this.scenesContainer['scene' + (index + 1)].addChild(this.sprites[key]);
       }
     })
   },
@@ -100,6 +176,37 @@ Page({
     if (this.pixiCanvas && event.changedTouches && event.changedTouches.length) {
       this.pixiCanvas.dispatchEvent(event);
     }
+  },
+  animate() {
+    //渲染到渲染器
+    this.application.ticker.add(() => {
+      this.application.renderer.render(this.stage)
+    });
+  },
+  touchStart(e) {
+    console.log('drag-start', e)
+    // console.log(e.data.getLocalPosition(this.parent));
+    let touch = e.changedTouches[0];
+    offsetX = touch.clientX;
+    offsetY = touch.clientY
+  },
+  touchMove(e) {
+    // console.log('drag-move',  e)
+    let touch = e.changedTouches[0];
+    console.log(touch.clientX - offsetX)
+    this.stage.x += touch.clientX - offsetX;
+    offsetX = touch.clientX
+    // 边界
+    if (this.stage.x > 0) {
+      this.stage.x = 0
+    }
+    if (this.stage.x < -this.stage.width + this.systemInfo.windowWidth) {
+      this.stage.x = -this.stage.width + this.systemInfo.windowWidth
+    }
+    this.animate()
+  },
+  touchEnd(e) {
+    console.log('drag-end', e)
   },
   onHide() {
     // 页面隐藏

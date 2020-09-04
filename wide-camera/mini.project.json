@@ -1,5 +1,6 @@
 {
   "cloud": {
     "type": "CLOUDAPP"
-  }
+  },
+  "component2": true
 }

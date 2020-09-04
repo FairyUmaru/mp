@@ -5,7 +5,6 @@
   "license": "MIT",
   "dependencies": {
     "@tbminiapp/pixi-miniprogram-engine": "^1.0.16",
-    "@tbmp/mp-cloud-sdk": "*",
     "@types/pixi.js": "^4.7.5"
   }
 }

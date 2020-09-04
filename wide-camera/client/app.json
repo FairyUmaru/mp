@@ -1,9 +1,11 @@
 {
   "pages": [
-    "pages/index/index"
+    "pages/index/index",
+    "pages/hammer/hammer"
   ],
   "window": {
     "defaultTitle": "My App",
-    "enableSkia":"true"
+    "allowsBounceVertical":"NO",
+    "enableSkia": "true"
   }
 }
