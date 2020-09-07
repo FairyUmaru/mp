@@ -5,6 +5,8 @@
   "license": "MIT",
   "dependencies": {
     "@tbminiapp/pixi-miniprogram-engine": "^1.0.16",
-    "@types/pixi.js": "^4.7.5"
+    "@types/pixi.js": "^4.7.5",
+    "pixi-projection": "^0.2.1",
+    "pixi-tweener": "^0.10.2"
   }
 }

@@ -1,17 +1,24 @@
 import * as PIXI from "@tbminiapp/pixi-miniprogram-engine";
+import { Tweener, Easing } from "pixi-tweener";
+// import { pixi_projection } from "/static/pixi-projection.js"
+// require('/static/pixi-projection.js');
+// require("pixi-projection");
 // registerCanvas 注册canvas给PIXI 
 const { registerCanvas, devicePixelRatio } = PIXI.miniprogram;
 var offsetX, offsetY
+var that = null;
 Page({
   // 供pixi渲染的canvas
   pixiCanvas: null,
   onLoad(query) {
+    that = this
+    // console.log('333333', projection)
     // 页面加载
     console.info(`Page onLoad with query: ${JSON.stringify(query)}`);
     this.systemInfo = my.getSystemInfoSync();
     console.log(this.systemInfo)
     this.stage = new PIXI.Container();
-
+     
     // 存储精灵图
     this.sprites = {}
   },
@@ -56,27 +63,41 @@ Page({
         });
         // 添加根舞台到this.application.stage
         this.application.stage.addChild(this.stage);
-
+        Tweener.init(this.application.ticker)
         this.initScenes()
         this.loadResource()
       },
     });
   },
   // 初始化场景，为每个场景创建一个container
-  initScenes(){
+  initScenes() {
     this.scenes = [
       {
         name: 'scene1',
         x: 0,
         y: 0,
-        width: 1500,
+        width: 750,
         height: 750,
       },
       {
         name: 'scene2',
+        x: 750,
+        y: 0,
+        width: 750,
+        height: 750,
+      },
+      {
+        name: 'scene3',
         x: 1500,
         y: 0,
-        width: 1500,
+        width: 750,
+        height: 750,
+      },
+      {
+        name: 'scene4',
+        x: 2250,
+        y: 0,
+        width: 750,
         height: 750,
       }
     ];
@@ -94,7 +115,10 @@ Page({
   // 加载资源
   loadResource() {
     const loader = new PIXI.loaders.Loader();
-    loader.add('bg1', '/static/right.jpg')
+    loader.add('bg1', '/static/right/right.left.jpg')
+    .add('bg2', '/static/right/right.front.jpg')
+    .add('bg3', '/static/right/right.right.jpg')
+    .add('bg4', '/static/right/right.back.jpg')
       .add('windows', '/static/child.png')
 
     loader.on("error", function (target, resource) {  // 加载进度
@@ -106,15 +130,19 @@ Page({
       console.log('加载完成')
     })
     // 执行loader
-    loader.load((loader, resources) => {
+    loader.load( async(loader, resources) => {
       Object.keys(resources).forEach((key) => {
         this.sprites[key] = new PIXI.Sprite(resources[key].texture)
       })
-      
+
       this.addResourceToScene()
       // this.sprites.windows.interactive = true
       // this.stage.addChild(this.sprites.windows)
       // console.log('windowsssss', this.sprites.windows)
+      console.log('8888', this.stage)
+      this.stage.interactive = true
+      this.stage.on('touchstart', this.touchStart)
+      this.stage.on('touchmove', this.touchMove)
 
       // 添加点击事件
       this.sprites.windows
@@ -123,6 +151,7 @@ Page({
             content: '点击了图标'
           })
         })
+     await Tweener.add({ target: this.sprites.windows, duration: 3, ease: Easing.easeInOutCubic }, { x: 100, alpha: 0.5});
       this.animate()
     });
 
@@ -134,7 +163,7 @@ Page({
         bg1: {
           x: 0,
           y: 0,
-          width: 1500,
+          width: 750,
           height: 750
         },
         windows: {
@@ -146,6 +175,30 @@ Page({
           interactive: true,
           buttonMode: true
         }
+      },
+      {
+        bg2: {
+          x: 0,
+          y: 0,
+          width: 750,
+          height: 750
+        },
+      },
+      {
+        bg3: {
+          x: 0,
+          y: 0,
+          width: 750,
+          height: 750
+        },
+      },
+      {
+        bg4: {
+          x: 0,
+          y: 0,
+          width: 750,
+          height: 750
+        },
       }
     ]
     //给场景添加图
@@ -165,40 +218,45 @@ Page({
       }
     })
   },
-  // 监听小程序canvas的touch事件，并触发pixi内部事件  
-  onTouchHandle(event) {
-    if (this.pixiCanvas && event.changedTouches && event.changedTouches.length) {
-      console.log(this.pixiCanvas)
-      this.pixiCanvas.dispatchEvent(event);
-    }
-  },
   animate() {
     //渲染到渲染器
     this.application.ticker.add(() => {
       this.application.stage.addChild(this.stage);
     })
   },
+  // 监听小程序canvas的touch事件，并触发pixi内部事件  
+  onTouchHandle(event) {
+    if (this.pixiCanvas && event.changedTouches && event.changedTouches.length) {
+      // console.log(this.pixiCanvas)
+      this.pixiCanvas.dispatchEvent(event);
+    }
+  },
+
   touchStart(e) {
     console.log('drag-start', e)
     // console.log(e.data.getLocalPosition(this.parent));
-    let touch = e.changedTouches[0];
-    offsetX = touch.clientX;
-    offsetY = touch.clientY
+    let touch =  e.data.getLocalPosition(this.parent)
+    console.log(touch)
+    offsetX = touch.x;
+    offsetY = touch.y;
   },
-  touchMove(e) {
-    // console.log('drag-move',  e)
-    let touch = e.changedTouches[0];
-    console.log(touch.clientX - offsetX)
-    this.stage.x += touch.clientX - offsetX;
-    offsetX = touch.clientX
+  async touchMove(e) {
+    console.log('drag-move',  e)
+    let touch = e.data.getLocalPosition(this.parent)
+    console.log(touch.x - offsetX, that.stage)
+    that.stage.x += touch.x - offsetX;
+    offsetX = touch.x
     // 边界
-    if (this.stage.x > 0) {
-      this.stage.x = 0
+    if (that.stage.x > 0) {
+      // that.stage.x = -that.stage.width + that.systemInfo.windowWidth
+      let x = -that.stage.width + that.systemInfo.windowWidth;
+      await Tweener.add({ target: that.stage, duration: 2, ease: Easing.easeInOutCubic }, { x: x});
     }
-    if (this.stage.x < -this.stage.width + this.systemInfo.windowWidth) {
-      this.stage.x = -this.stage.width + this.systemInfo.windowWidth
+    if (that.stage.x < -that.stage.width + that.systemInfo.windowWidth) {
+      // that.stage.x = 0
+       await Tweener.add({ target: that.stage, duration: 2, ease: Easing.easeInOutCubic }, { x: 0});
     }
-    this.animate()
+    // this.animate()
   },
   touchEnd(e) {
     console.log('drag-end', e)
