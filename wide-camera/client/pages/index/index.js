@@ -7,6 +7,7 @@ import { Tweener, Easing } from "pixi-tweener";
 const { registerCanvas, devicePixelRatio } = PIXI.miniprogram;
 var offsetX, offsetY
 var that = null;
+var isTouch = false;
 Page({
   // 供pixi渲染的canvas
   pixiCanvas: null,
@@ -18,7 +19,7 @@ Page({
     this.systemInfo = my.getSystemInfoSync();
     console.log(this.systemInfo)
     this.stage = new PIXI.Container();
-     
+
     // 存储精灵图
     this.sprites = {}
   },
@@ -99,6 +100,13 @@ Page({
         y: 0,
         width: 750,
         height: 750,
+      },
+      {
+        name: 'scene5',
+        x: 3000,
+        y: 0,
+        width: 750,
+        height: 750,
       }
     ];
     this.scenesContainer = {}
@@ -116,10 +124,12 @@ Page({
   loadResource() {
     const loader = new PIXI.loaders.Loader();
     loader.add('bg1', '/static/right/right.left.jpg')
-    .add('bg2', '/static/right/right.front.jpg')
-    .add('bg3', '/static/right/right.right.jpg')
-    .add('bg4', '/static/right/right.back.jpg')
+      .add('bg2', '/static/right/right.front.jpg')
+      .add('bg3', '/static/right/right.right.jpg')
+      .add('bg4', '/static/right/right.back.jpg')
+      .add('bg5', '/static/right/right.left.jpg')
       .add('windows', '/static/child.png')
+      .add('windows2', '/static/child.png')
 
     loader.on("error", function (target, resource) {  // 加载进度
     });
@@ -130,7 +140,7 @@ Page({
       console.log('加载完成')
     })
     // 执行loader
-    loader.load( async(loader, resources) => {
+    loader.load(async (loader, resources) => {
       Object.keys(resources).forEach((key) => {
         this.sprites[key] = new PIXI.Sprite(resources[key].texture)
       })
@@ -151,7 +161,7 @@ Page({
             content: '点击了图标'
           })
         })
-     await Tweener.add({ target: this.sprites.windows, duration: 3, ease: Easing.easeInOutCubic }, { x: 100, alpha: 0.5});
+      //  await Tweener.add({ target: this.sprites.windows, duration: 3, ease: Easing.easeInOutCubic }, { x: 100, alpha: 0.5});
       this.animate()
     });
 
@@ -199,7 +209,24 @@ Page({
           width: 750,
           height: 750
         },
-      }
+      },
+      {
+        bg5: {
+          x: 0,
+          y: 0,
+          width: 750,
+          height: 750
+        },
+        windows2: {
+          x: 130,
+          y: 400,
+          width: 60,
+          height: 60,
+          //启用交互事件
+          interactive: true,
+          buttonMode: true
+        }
+      },
     ]
     //给场景添加图
     spritesData.forEach((item, index) => {
@@ -233,30 +260,33 @@ Page({
   },
 
   touchStart(e) {
+    isTouch = true
     console.log('drag-start', e)
-    // console.log(e.data.getLocalPosition(this.parent));
-    let touch =  e.data.getLocalPosition(this.parent)
+    let touch = e.data.getLocalPosition(this.parent)
     console.log(touch)
     offsetX = touch.x;
     offsetY = touch.y;
   },
   async touchMove(e) {
-    console.log('drag-move',  e)
+    console.log('drag-move', e)
     let touch = e.data.getLocalPosition(this.parent)
     console.log(touch.x - offsetX, that.stage)
-    that.stage.x += touch.x - offsetX;
-    offsetX = touch.x
-    // 边界
-    if (that.stage.x > 0) {
-      // that.stage.x = -that.stage.width + that.systemInfo.windowWidth
-      let x = -that.stage.width + that.systemInfo.windowWidth;
-      await Tweener.add({ target: that.stage, duration: 2, ease: Easing.easeInOutCubic }, { x: x});
+    if (isTouch) {
+      that.stage.x += touch.x - offsetX;
+      // let xx = that.stage.x += touch.x - offsetX
+      // await Tweener.add({ target: that.stage, duration: 2, ease: Easing.easeInOutCubic }, { x: xx });
+      offsetX = touch.x
+      // 边界
+      if (that.stage.x > 0) {
+        that.stage.x = -that.stage.width + that.systemInfo.windowWidth * 2
+        // let x = -that.stage.width + that.systemInfo.windowWidth;
+        // await Tweener.add({ target: that.stage, duration: 0.2, ease: Easing.easeInOutCubic }, { x: x});
+      }
+      if (that.stage.x < -that.stage.width + that.systemInfo.windowWidth * 2) {
+        that.stage.x = 0
+        //  await Tweener.add({ target: that.stage, duration: 0.2, ease: Easing.easeInOutCubic }, { x: 0});
+      }
     }
-    if (that.stage.x < -that.stage.width + that.systemInfo.windowWidth) {
-      // that.stage.x = 0
-       await Tweener.add({ target: that.stage, duration: 2, ease: Easing.easeInOutCubic }, { x: 0});
-    }
-    // this.animate()
   },
   touchEnd(e) {
     console.log('drag-end', e)
