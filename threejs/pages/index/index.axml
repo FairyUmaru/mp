@@ -1,0 +1,3 @@
+<view class="page-game">
+  <canvas id="canvas" class="canvas" type="webgl" onReady="canvasOnReady"></canvas>
+</view>
