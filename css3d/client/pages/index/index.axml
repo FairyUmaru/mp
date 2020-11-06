@@ -1,0 +1,17 @@
+<view style="margin:0; width:100vw;height:100vh;overflow:hidden;">
+  <view class="content">
+  <view class="box">
+    <view class="div" onTouchMove="touchMove" onTouchStart="touchStart" onTouchEnd="touchEnd" animation="{{animation}}" style="margin: -{{imageWidth/2}}px 0 0 -{{imageWidth/2}}px; width: {{imageWidth}}px; height:{{imageWidth}}px; position:absolute;left:50%;top:50%;transform:rotateX({{rotateX}}deg) rotateY({{rotateY}}deg)">
+      <!-- <view style="{{boxViewStyles[0]}}">前
+        <view class="cover" onTap="clickCover"></view>
+      </view>
+      <view>右</view>
+      <view>后</view>
+      <view>左</view>
+      <view>上</view>
+      <view>下</view> -->
+      <view a:for="{{boxViewStyles}}" key="{{index}}" style="{{item}}"></view>
+    </view>
+  </view>
+</view>
+</view>
