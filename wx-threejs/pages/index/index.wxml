@@ -1,0 +1,4 @@
+<!--index.wxml-->
+<view class="container">
+  <canvas type="webgl" class="canvas" id="myCanvas" bindtap="tap" bindtouchstart="touchStart" bindtouchmove="touchMove" bindtouchend="touchEnd" bindtouchcancel="touchCancel" ></canvas>
+</view>

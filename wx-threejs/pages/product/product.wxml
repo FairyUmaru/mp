@@ -1,0 +1,66 @@
+<!--pages/product/product.wxml-->
+<view class="container">
+  <view class='detail-container {{hasActionBar ? "hasActionBar" : ""}}'>
+    <view class="detail-banner">
+      <swiper indicator-dots="{{indicatorDots}}" autoplay="{{autoplay}}" current="{{imageIndex}}" interval="{{interval}}" duration="{{duration}}" circular="{{autoplay}}" indicator-color="#e5e5e5" indicator-active-color="#999798">
+          <!--have?resourcePath:img-->
+          <swiper-item wx:for="{{goodsPic}}" wx:key="index">
+            <image src="{{item}}" class="slide-image" />
+          </swiper-item>
+        </swiper>
+    </view>
+    <view class='details-abs'>
+        <view class='details-title'>
+          <view class='detTitleWrap'>
+            <view class='prod-title'>{{goodsDetails.title}}</view>
+            <view class='collShareWrap'>
+              <view bindtap='changeshoucang' class='icon iconfont iconcollStyle {{collect?"icon-shoucanghou":"icon-shoucang"}}'></view>
+            </view>
+          </view>
+          <view wx:if="{{!memLabel.hideSalePrice && true}}" class='prod-price'>￥{{goodsDetails.salePrice}}
+            <text wx:if="{{showMinStatus == 1 && ischange ==false}}">起</text>
+          </view>
+          <!--{{price}}-->
+          <view wx:if="{{salePrice != price}}" class='prod-primeprice prod-font prodLeft'>￥{{goodsDetails.price}}</view>
+          <!-- <image src='{{url}}{{statusForLike ? "likeA.png" : "likeB.png"}}' bindtap='changeLike'></image> -->
+        </view>
+        <!-- 会员价格 -->
+        <view class="memPriceWrap" wx:if="{{isShowMem}}">
+          <view class="memFlexBetween">
+            <view class="memePrice">
+              <view class="memPrice">￥ {{memPrice}}</view>
+              <view style="position:relative;margin:2rpx 0 0 10rpx;">
+                <view wx:if="{{memLabel.isShowDetail}}" style="color:{{memLabel.textColor}};background-color:{{memLabel.bgColor}};border:1rpx solid {{memLabel.borderColor}};" class="memLabel"></view>
+                <view wx:if="{{memLabel.isShowDetail}}" style="color:{{memLabel.textColor}};" class="memText">{{memLabel.text}}</view>
+              </view>
+            </view>
+            <button wx:if="{{isvisitor}}" class='openMem' data-type="openMem" open-type="getUserInfo" bindgetuserinfo="getUserInfo"></button>
+            <view wx:if="{{isvisitor}}" catchtap="goVip" class="openMemBtn">开通会员></view>
+          </view>
+        </view>
+        <!-- <view class='details-color'>
+          <view class='detColor'>颜色</view>
+          <view class='color-list'>
+            <view class='color-list-item {{nowColor === item.colorKey ? "now" :""}} {{item.status?"disc":""}}' wx:for="{{skcVOList}}" wx:key="index" bindtap='changeColor' data-productCode="{{item.productCode}}" data-disc="{{item.status}}" data-color="{{index}}" data-chooseC='{{item.colorKey}}'>{{item.colorName}}</view>
+          </view>
+        </view>
+        <view class='details-size'>
+          <view class='detSize detSizeWrap'>
+            <text>尺码</text>
+            <navigator url="/subPackages/brandInfo/sizeGuide/sizeGuide?url={{sizeTablePath}}" class='detSizeGuide'>尺码指南</navigator>
+          </view>
+          <view class='size-list'>
+            <view class='size-list-item {{nowSize === item.sizeKey? "now" :""}} {{item.status? "disc":""}}' wx:for="{{sizeVOList}}" wx:key="index" bindtap='changeSize' data-disc="{{item.status}}" data-hasInventory="{{item.hasInventory}}" data-size="{{index}}" data-chooses='{{item.sizeKey}}'>{{item.sizeName}}</view>
+          </view>
+        </view> -->
+    </view>
+    <view class="goods-information">
+      <view class="detailImageList">
+        <image wx:for="{{goodsDetails.detailImageList}}" wx:key="index" src='{{item}}' style='width:100%;' mode='widthFix'></image>
+      </view>
+    </view>
+    <view class='detail-footer {{hasActionBar ? "hasActionBar" : ""}}'>
+      <view class="buy">立即购买</view>
+    </view>
+  </view>
+</view>
